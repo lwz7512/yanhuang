@@ -11,22 +11,18 @@ var jsonfile = require('jsonfile');
 var events = require('events');
 
 var httpHelper = require("./httpHelper");
+var article = require("./article");
 
 var url = "http://www.yhcqw.com";
-var downloadsPath = path.join(__dirname, 'downloads');
+var downloadsPath = path.join(__dirname, 'data');
 var emitter = new events.EventEmitter();
 
-if(emitter){
-  console.log('emitter available...');
-}else{
-  console.log('emitter inavailable...');
-}
 
 emitter.on('firstRoundComplete', function(){
   console.log('<<<<<<<<<< to download remaining page....');
 });
 
-function htmlRequestHandler(err, data){
+function htmlRequestHandler(err, data, headers){
   if(err){
     console.log(err);
     return;
@@ -46,17 +42,17 @@ function htmlRequestHandler(err, data){
       tasks.push(url+href);
     });
     
-    if(i==0){
+    if(i==0){//文章精粹
       writeJSONFile(downloadsPath+'/0.json', articles);
     }
     
-    if(i==1){
+    if(i==1){//文章排行榜
       writeJSONFile(downloadsPath+'/1.json', articles);
     }
     
   });
   
-  //loadArticles(tasks);
+  loadArticles(tasks);
   
   console.log('======= end of editor picked articles ===========');
 }
@@ -70,17 +66,19 @@ function loadArticles(urls){
     console.log(">>>>>> end of first round article download...");
     return;
   }
-  
   console.log('>>> remaining: '+urls.length);
-  var article = urls[urls.length-1];
   
-  httpHelper.get(article, 30000, function(err, data){
-    console.log('>>> loaded: '+ article);
+  var pageURL = urls[urls.length-1];
+  article.download(pageURL, function(result){
+    //console.log(result);
+    var filePath = pageURL.split('/');
+    var fileName = filePath[filePath.length-1];
+    writeJSONFile(downloadsPath+'/'+fileName+'.json', result);
     
     urls.pop();//finish one...
     
     loadArticles(urls);//call self to continue...
-  }, 'gb2312');
+  });
 }
 
 function writeJSONFile(savedJsonPath, result){
