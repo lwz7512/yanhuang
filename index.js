@@ -15,6 +15,7 @@ var article = require("./article");
 
 var url = "http://www.yhcqw.com";
 var downloadsPath = path.join(__dirname, 'data');
+var articlesPath = path.join(__dirname, 'articles');
 var emitter = new events.EventEmitter();
 
 
@@ -43,11 +44,11 @@ function htmlRequestHandler(err, data, headers){
     });
     
     if(i==0){//文章精粹
-      writeJSONFile(downloadsPath+'/0.json', articles);
+      writeJSONFile(downloadsPath+'/home_best.json', articles);
     }
     
     if(i==1){//文章排行榜
-      writeJSONFile(downloadsPath+'/1.json', articles);
+      writeJSONFile(downloadsPath+'/home_rank.json', articles);
     }
     
   });
@@ -73,7 +74,7 @@ function loadArticles(urls){
     //console.log(result);
     var filePath = pageURL.split('/');
     var fileName = filePath[filePath.length-1];
-    writeJSONFile(downloadsPath+'/'+fileName+'.json', result);
+    writeJSONFile(articlesPath+'/'+fileName+'.json', result);
     
     urls.pop();//finish one...
     
