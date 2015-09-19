@@ -70,11 +70,20 @@ function loadArticles(urls){
   console.log('>>> remaining: '+urls.length);
   
   var pageURL = urls[urls.length-1];
+  var filePath = pageURL.split('/');
+  var fileName = filePath[filePath.length-1];
+  var jsonPage = articlesPath+'/'+fileName+'.json';
+  //check downloaded page exist or not
+  //@2015/09/19
+  if(fs.existsSync(jsonPage)){
+    urls.pop();//skip one...
+    loadArticles(urls);//continue;
+    return;
+  }
+  
   article.download(pageURL, function(result){
     //console.log(result);
-    var filePath = pageURL.split('/');
-    var fileName = filePath[filePath.length-1];
-    writeJSONFile(articlesPath+'/'+fileName+'.json', result);
+    writeJSONFile(jsonPage, result);
     
     urls.pop();//finish one...
     

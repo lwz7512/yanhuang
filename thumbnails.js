@@ -1,3 +1,8 @@
+/**
+ * first need to run store.js to get all the books
+ * @2015/09/19
+ */
+
 var easyimg = require('easyimage'),
     path = require('path'),
     jsonfile = require('jsonfile'),
@@ -6,9 +11,12 @@ var easyimg = require('easyimage'),
     request = require('request');
 
 var downloadsPath = path.join(__dirname, 'data');
-var thumbnailsPath = path.join(__dirname, 'thumbnails');
+var thumbnailsPath = path.join(__dirname, 'books/thumbnails');
+//下载到的封面图片，等待缩小处理
+//@2015/09/19
+var coverImgPath = '/Users/liwenzhi/Downloads/books';
 
-function getFiles (dir, files_){
+var getFiles function(dir, files_){
     files_ = files_ || [];
     var files = fs.readdirSync(dir);
     for (var i in files){
@@ -20,9 +28,7 @@ function getFiles (dir, files_){
         }
     }
     return files_;
-}
-
-//console.log(getFiles('/Users/liwenzhi/Downloads/books'));
+};
 
 var download = function(uri, filename, callback){
   request.head(uri, function(err, res, body){
@@ -45,18 +51,6 @@ var downloadImgs = function(urls, destdir, callback){
     downloadImgs(urls, destdir, callback);
   });
 };
-
-var file = downloadsPath+'/2.json';
-//jsonfile.readFile(file, function(err, obj) {
-//  var thumbObjs = JSON.parse(obj);
-//  var urls = [];
-//  for(var i in thumbObjs){
-//    urls.push(thumbObjs[i]['img']);
-//  }
-//  downloadImgs(urls, '/Users/liwenzhi/Downloads/books', function(){
-//    console.log(">>> all the books cover downloaded!");
-//  });
-//})
 
 //fs.exists(thumbnailsPath, function (exists) {
 //  // util.debug(exists ? "it's there" : "no downloads directory!");
@@ -89,5 +83,18 @@ var resizeToThumbnail = function(rawImgFiles){
 
 };
 
-var rawImages = getFiles('/Users/liwenzhi/Downloads/books');
-resizeToThumbnail(rawImages);
+//1. download the raw cover image of each book;
+var file = downloadsPath+'/store.json';
+jsonfile.readFile(file, function(err, obj) {
+  var thumbObjs = JSON.parse(obj);
+  var urls = [];
+  for(var i in thumbObjs){
+    urls.push(thumbObjs[i]['img']);
+  }
+  downloadImgs(urls, coverImgPath, function(){
+    console.log(">>> all the books cover downloaded!");
+    //2. resize raw image to normal size;
+    var rawImages = getFiles(coverImgPath);
+    resizeToThumbnail(rawImages);
+  });
+})
